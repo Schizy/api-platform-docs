@@ -23,6 +23,22 @@
 > Hydra est un vocabulaire RDF du W3C conçu pour décrire les API pour les machines.
 
 
+## #[ApiResource]
+
+Dès qu'on applique l'attribut `#[ApiResource]` sur une entité doctrine, on a automatiquement une ressource Api Platform avec le CRUD complet dans la doc `/api`.
+
+Par défaut, ça retournera toutes les propriétés publiques et tous les getters, donc on peut créer des `propriétés virtuelles` très facilement en faisant :
+
+![getTrucBidule.png](images/partie-1/getTrucBidule.png)
+
+Et ça générera automatiquement ce schéma de réponse :
+![fieldTrucBidule.png](images/partie-1/fieldTrucBidule.png)
+
+
+
+
+
+
 ```python
 def exemple():
 return "code"
