@@ -25,24 +25,48 @@
 
 ## #[ApiResource]
 
+### Propriétés virtuelles
 Dès qu'on applique l'attribut `#[ApiResource]` sur une entité doctrine, on a automatiquement une ressource Api Platform avec le CRUD complet dans la doc `/api`.
 
 Par défaut, ça retournera toutes les propriétés publiques et tous les getters, donc on peut créer des `propriétés virtuelles` très facilement en faisant :
 
-![getTrucBidule.png](images/partie-1/getTrucBidule.png)
+![getTrucBidule.png](images/partie-1/01-getTrucBidule.png)
 
 Et ça générera automatiquement ce schéma de réponse :
-![fieldTrucBidule.png](images/partie-1/fieldTrucBidule.png)
+
+![fieldTrucBidule.png](images/partie-1/02-fieldTrucBidule.png)
+
+### Groupes de serialization
+
+Par défaut, tous les champs sont exposés mais souvent il y a certains champs ou certaines méthodes qu'on ne souhaite pas exposer, pour ce cas de figure on peut utiliser les `groupes de serialization` (de Symfony):
+
+![05-champs-avec-groupes.png](images/partie-1/05-champs-avec-groupes.png)
+
+Avec la config suivante dans l'attribut `#[ApiResource]` pour utiliser les groupes :
+
+![03-groupes-de-serialization.png](images/partie-1/03-groupes-de-serialization.png)
+
+Pour rappel, voici à quoi correspondent la `normalisation` et la `denormalisation` :
+![04-schema-serialization.png](images/partie-1/04-schema-serialization.png)
+
+> ℹ️ **Information**
+> 
+> On peut renommer les champs exposés avec l'attribut `#[SerializedName]`
 
 
+### Pagination
 
+L'attribut `#[ApiResource]` permet de configurer la pagination pour chaque ressource avec certaines options comme :
 
-
-
-```python
-def exemple():
-return "code"
+```php
+#[ApiResource(
+    paginationItemsPerPage: 10,
+    paginationMaximumItemsPerPage: 100
+)]
 ```
+
+### Filters
+
 
 | Colonne 1 | Colonne 2 |
 |-----------|-----------|
