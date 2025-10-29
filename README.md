@@ -1,38 +1,11 @@
-# Documentation du Projet
+# Notes du screencast Api Platform de Symfony Casts
 
-Bienvenue dans la documentation de notre projet !
+Ce projet est une documentation facile d'accès où je peux revoir mes notes et exemples du très bon screencast Api Platform de Symfony Casts :
+- https://symfonycasts.com/screencast/api-platform
+
 
 ## Table des matières
 
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Ressources supplémentaires](#ressources-supplémentaires)
-
-## Introduction
-
-Ce projet est une application web moderne qui permet de gérer des tâches efficacement.
-
-Pour en savoir plus sur les fonctionnalités, consultez le [guide utilisateur](guide-utilisateur.md).
-
-## Installation
-
-Pour installer le projet, suivez ces étapes :
-
-1. Clonez le repository
-2. Installez les dépendances avec `npm install`
-3. Lancez l'application avec `npm start`
-
-Besoin d'aide ? Voir la [section dépannage](guide-utilisateur.md#dépannage) du guide utilisateur.
-
-## Configuration
-
-Les fichiers de configuration se trouvent dans le dossier `/config`.
-
-Pour les options avancées, référez-vous à la [configuration avancée](guide-utilisateur.md#configuration-avancée).
-
-## Ressources supplémentaires
-
-- [Guide utilisateur complet](guide-utilisateur.md)
-- [Section FAQ](guide-utilisateur.md#faq)
-- Retour en haut : [Table des matières](#table-des-matières)
+- [Part 1: Mythically Good RESTful APIs](docs/partie-1.md)
+- [Part 2: Security for your Treasures](docs/partie-2.md)
+- [Part 3: Custom Resources](docs/partie-3.md)
