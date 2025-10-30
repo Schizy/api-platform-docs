@@ -46,19 +46,46 @@ public function getTrucBidule(): string
 }
 ```
 
-Et ça générera automatiquement ce schéma de réponse :
+Et ça générera automatiquement ce schéma de réponse avec le champs `trucBidule` :
 
-![fieldTrucBidule.png](images/partie-1/02-fieldTrucBidule.png)
+```json
+{
+  "@id": "/api/treasures/1",
+  "@type": "Treasure",
+  "id": 1,
+  "owner": "/api/users/3",
+  "name": "set of ornate jewelry",
+  "shortDescription": "Fugit quo perspiciatis est ratione do...",
+  "plunderedAtAgo": "2 months ago",
+  "trucBidule": "truc bidule"
+}
+```
 
 ### Groupes de serialization
 
 Par défaut, tous les champs sont exposés mais souvent il y a certains champs ou certaines méthodes qu'on ne souhaite pas exposer, pour ce cas de figure on peut utiliser les `groupes de serialization` (de Symfony):
 
-![05-champs-avec-groupes.png](images/partie-1/05-champs-avec-groupes.png)
+```php
+#[ORM\Column(length: 255)]
+#[Groups(['treasure:read', 'treasure:write'])]
+private ?string $name = null;
+
+#[ORM\Column(type: Types::TEXT)]
+#[Groups('treasure:read')]
+private ?string $description = null;
+```
+
 
 Avec la config suivante dans l'attribut `#[ApiResource]` pour utiliser les groupes :
 
-![03-groupes-de-serialization.png](images/partie-1/03-groupes-de-serialization.png)
+```php
+#[ApiResource(
+    shortName: 'Treasure',
+    description: 'A rare and valuable treasure.',
+    normalizationContext: ['groups' => ['treasure:read']],
+    denormalizationContext: ['groups' => ['treasure:write']],
+)]
+```
 
 Pour rappel, voici à quoi correspondent la `normalisation` et la `denormalisation` :
 ![04-schema-serialization.png](images/partie-1/04-schema-serialization.png)
@@ -110,4 +137,3 @@ de ligne
 
 ~~Texte barré ?~~
 
-==highlight ?==
