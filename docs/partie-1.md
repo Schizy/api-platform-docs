@@ -1,7 +1,16 @@
 # Part 1: Mythically Good RESTful APIs
 
-## Lexique
 
+## Table des matières :
+- [Lexique](#Lexique)
+- [#[ApiResource]](#ApiResource)
+- - [Propriétés virtuelles](#Propriétés-virtuelles)
+- - [Groupes de serialization](#Groupes-de-serialization)
+- - [Pagination](#Pagination)
+- [Filters](#Filters)
+
+
+## Lexique
 
 **OpenAPI (anciennement Swagger Specification)**
 > C'est un standard de description d'API REST dans un format JSON ou YAML.
@@ -30,7 +39,12 @@ Dès qu'on applique l'attribut `#[ApiResource]` sur une entité doctrine, on a a
 
 Par défaut, ça retournera toutes les propriétés publiques et tous les getters, donc on peut créer des `propriétés virtuelles` très facilement en faisant :
 
-![getTrucBidule.png](images/partie-1/01-getTrucBidule.png)
+```php
+public function getTrucBidule(): string
+{
+    return 'truc bidule';
+}
+```
 
 Et ça générera automatiquement ce schéma de réponse :
 
@@ -65,7 +79,9 @@ L'attribut `#[ApiResource]` permet de configurer la pagination pour chaque resso
 )]
 ```
 
-### Filters
+
+## Filters
+
 
 
 | Colonne 1 | Colonne 2 |
@@ -87,3 +103,11 @@ L'attribut `#[ApiResource]` permet de configurer la pagination pour chaque resso
 >
 > Détails supplémentaires
 
+
+
+Un saut  
+de ligne
+
+~~Texte barré ?~~
+
+==highlight ?==
