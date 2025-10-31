@@ -31,11 +31,17 @@
 **Hydra**
 > Hydra est un vocabulaire RDF du W3C conçu pour décrire les API pour les machines.
 
+**IRI (Internationalized Resource Identifier)**
+> C'est une adresse qui désigne une ressource unique au format URI.
+
+**URI (Uniform Resource Identifier)**
+> Contrairement aux URL qui n'acceptent que l'ascii (a-z), tous les caractères unicode sont acceptés.
 
 ## #[ApiResource]
 
-### Propriétés virtuelles
 Dès qu'on applique l'attribut `#[ApiResource]` sur une entité doctrine, on a automatiquement une ressource Api Platform avec le CRUD complet dans la doc `/api`.
+
+### Propriétés virtuelles
 
 Par défaut, ça retournera toutes les propriétés publiques et tous les getters, donc on peut créer des `propriétés virtuelles` très facilement en faisant :
 
@@ -109,6 +115,63 @@ L'attribut `#[ApiResource]` permet de configurer la pagination pour chaque resso
 
 ## Filters
 
+Les filtres peuvent s'appliquer avec l'attribut `#[ApiFilter(MonFiltre::class)]` qu'on peut mettre soit sur la classe avec potentiellement l'option `properties` soit directement sur la bonne propriété.
+> ⚠️ **Attention**
+>
+> L'attribut `#[ApiFilter]` a été déprécié et sera supprimé dans Api Platform 5 !  
+> On doit préférer l'attribut `#[QueryParameter]` qui lui ne s'applique sur sur la classe.
+
+
+La liste des filtres disponibles :
+
+`BooleanFilter`
+: Permet de filtrer sur un booléen (`?property=<true|false|1|0>`)
+
+`DateFilter`
+: Permet de filtrer sur une date (`?property[<after|before|strictly_after|strictly_before>]=value`)
+
+`ExistsFilter`
+: Permet de filtrer les valeurs nulles (`?property=<true|false|1|0>`)
+
+`NumericFilter`
+: Permet de filtrer sur un nombre exact (`?property=<int|bigint|decimal...>`)
+
+`RangeFilter`
+: Permet de filtrer sur une comparaison numérique (`?property[<lt|gt|lte|gte|between>]=value`)
+
+`OrderFilter`
+: Ne permet pas de filtrer mais de **trier** (`?order[property]=<asc|desc>`)
+
+### Search Filter
+
+Il y avait historiquement le `SearchFilter` qui pouvait recevoir une `strategy` en option.  
+Les stratégies étaient :`exact`, `partial`, `start`, `end`, et `word_start`.  
+Avec la possibilité de prefixer la stratégie par un `i` pour rendre la recherche `case insensitive`.
+
+Cependant, `SearchFilter` **a été déprécié**  et remplacé par 3 nouveaux filtres :
+
+`ExactFilter`
+: Permet de filtrer sur une valeur exacte (`?property=value`)
+
+`IriFilter`
+: Permet de filtrer sur un IRI (`?property=value`)
+
+`PartialSearchFilter`
+: Permet de filtrer sur une correspondance partielle et **case insensitive** (`?property=value`)
+
+
+### Nouveaux filtres spéciaux
+
+Il y a eu 2 nouveaux filtres qui permettent de combiner plusieurs filtres :
+
+`FreeTextQueryFilter`
+: Prend en argument un filtre pour pouvoir l'appliquer sur plusieurs propriétés à la fois (`?property=value`)
+
+
+`OrFilter`
+: Prend en argument un filtre pour permettre d'avoir un filtre qui match mais pas nécessairement tous.
+
+### Examples
 
 
 | Colonne 1 | Colonne 2 |
@@ -118,9 +181,7 @@ L'attribut `#[ApiResource]` permet de configurer la pagination pour chaque resso
 - [x] Tâche complétée
 - [ ] Tâche à faire
 
-> ⚠️ **Attention**
->
-> Contenu important à ne pas manquer
+
 
 > 💡 **Conseil**
 >
