@@ -7,7 +7,11 @@
 - - [Propriétés virtuelles](#Propriétés-virtuelles)
 - - [Groupes de serialization](#Groupes-de-serialization)
 - - [Pagination](#Pagination)
-- [Filters](#Filters)
+- [Les filtres](#Les-filtres)
+- - [Search Filter](#Search-Filter)
+- - [Nouveaux filtres spéciaux](#Nouveaux-filtres-spéciaux)
+- - [Examples](#Examples)
+- - [Filtre personnalisé](#Filtre-personnalisé)
 
 
 ## Lexique
@@ -52,7 +56,7 @@ public function getTrucBidule(): string
 }
 ```
 
-Et ça générera automatiquement ce schéma de réponse avec le champs `trucBidule` :
+Et ça générera automatiquement ce schéma de réponse avec le champ `trucBidule` :
 
 ```json
 {
@@ -69,7 +73,7 @@ Et ça générera automatiquement ce schéma de réponse avec le champs `trucBid
 
 ### Groupes de serialization
 
-Par défaut, tous les champs sont exposés mais souvent il y a certains champs ou certaines méthodes qu'on ne souhaite pas exposer, pour ce cas de figure on peut utiliser les `groupes de serialization` (de Symfony):
+Par défaut, tous les champs sont exposés, mais souvent, il y a certains champs ou certaines méthodes qu'on ne souhaite pas exposer, pour ce cas de figure, on peut utiliser les `groupes de serialization` (de Symfony) :
 
 ```php
 #[ORM\Column(length: 255)]
@@ -113,13 +117,13 @@ L'attribut `#[ApiResource]` permet de configurer la pagination pour chaque resso
 ```
 
 
-## Filters
+## Les filtres
 
 Les filtres peuvent s'appliquer avec l'attribut `#[ApiFilter(MonFiltre::class)]` qu'on peut mettre soit sur la classe avec potentiellement l'option `properties` soit directement sur la bonne propriété.
 > ⚠️ **Attention**
 >
 > L'attribut `#[ApiFilter]` a été déprécié et sera supprimé dans Api Platform 5 !  
-> On doit préférer l'attribut `#[QueryParameter]` qui lui ne s'applique sur sur la classe.
+> On doit préférer l'attribut `#[QueryParameter]` qui lui ne s'applique sur la classe.
 
 
 La liste des filtres disponibles :
@@ -140,7 +144,7 @@ La liste des filtres disponibles :
 : Permet de filtrer sur une comparaison numérique (`?property[<lt|gt|lte|gte|between>]=value`)
 
 `OrderFilter`
-: Ne permet pas de filtrer mais de **trier** (`?order[property]=<asc|desc>`)
+: Ne permet pas de filtrer, mais de **trier** (`?order[property]=<asc|desc>`)
 
 ### Search Filter
 
@@ -148,7 +152,7 @@ Il y avait historiquement le `SearchFilter` qui pouvait recevoir une `strategy` 
 Les stratégies étaient :`exact`, `partial`, `start`, `end`, et `word_start`.  
 Avec la possibilité de prefixer la stratégie par un `i` pour rendre la recherche `case insensitive`.
 
-Cependant, `SearchFilter` **a été déprécié**  et remplacé par 3 nouveaux filtres :
+Cependant, `SearchFilter` **a été déprécié** et remplacé par 3 nouveaux filtres :
 
 `ExactFilter`
 : Permet de filtrer sur une valeur exacte (`?property=value`)
@@ -160,41 +164,160 @@ Cependant, `SearchFilter` **a été déprécié**  et remplacé par 3 nouveaux f
 : Permet de filtrer sur une correspondance partielle et **case insensitive** (`?property=value`)
 
 
-### Nouveaux filtres spéciaux
+### Filtres spéciaux
 
-Il y a eu 2 nouveaux filtres qui permettent de combiner plusieurs filtres :
+`PropertyFilter`
+: C'est en réalité un **filtre de serialization**, qui permet de réduire les champs récupérés.
+
 
 `FreeTextQueryFilter`
-: Prend en argument un filtre pour pouvoir l'appliquer sur plusieurs propriétés à la fois (`?property=value`)
+: Prend en argument un filtre pour pouvoir l'appliquer sur plusieurs propriétés à la fois.
 
 
 `OrFilter`
-: Prend en argument un filtre pour permettre d'avoir un filtre qui match mais pas nécessairement tous.
+: Prend en argument un filtre qui n'est pas obligatoire, on aura un résultat tant qu'au moins un filtre correspond.
 
 ### Examples
+L'attribut `#[ApiFilter]` qui fonctionne toujours jusqu'à API Platform 5 :
+```php
+#[ORM\Column]
+#[ApiFilter(BooleanFilter::class)]
+private bool $isPublished = false;
+```
 
+```php
+#[ApiFilter(SearchFilter::class, properties: [ 'owner.username' => 'ipartial' ])]
+class DragonTreasure
+{
+}
+```
 
-| Colonne 1 | Colonne 2 |
-|-----------|-----------|
-| Donnée A  | Donnée B  |
+Le nouvel attribut `#[QueryParameter]` qui lui ne fonctionne pas sur les propriétés :
 
-- [x] Tâche complétée
-- [ ] Tâche à faire
-
-
-
-> 💡 **Conseil**
->
-> Astuce utile pour l'utilisateur
+```php
+#[QueryParameter(
+    key: 'isPublished',
+    filter: new BooleanFilter
+)]
+class DragonTreasure
+{
+}
+```
 
 > ℹ️ **Information**
 >
-> Détails supplémentaires
+> On notera que contrairement à avant, **il faut instancier** le filtre !
+
+Si la `key` correspond à une propriété, elle sera utilisée, sinon il faut spécifier le nom de la propriété :
 
 
+```php
+#[QueryParameter(
+    key: 'fonctionneQuandMeme',
+    filter: new BooleanFilter,
+    property: 'isPublished',
+)]
+```
+Evidemment, la recherche sera `/?fonctionneQuandMeme=true`
 
-Un saut  
-de ligne
+On n'est pas obligé d'écrire `key` à chaque fois, la syntaxe est plus compacte comme ça :
 
-~~Texte barré ?~~
+```php
+#[QueryParameter('properties', filter: new PropertyFilter())]
+class DragonTreasure
+{
+}
+```
 
+Avec la requête `/treasures?properties[]=name&properties[]=shortDescription` on obtiendrait quelque chose comme :
+
+```json
+{
+  "@id": "/api/treasures/3",
+  "@type": "Treasure",
+  "name": "collection of ancient tomes",
+  "shortDescription": "Praesentium quis ducimus omnis facili..."
+}
+```
+
+### Filtre personnalisé
+
+Il semblerait qu'on ne puisse plus appliquer les filtres aux sous-propriétés (`owner.username`) comme c'était le cas avec `#[ApiFilter]`.
+À la place, pour les cas plus complexes, il faut créer ses propres filtres.
+
+Avec le `MakerBundle` on peut lancer la commande :
+```bash
+bin/console make:filter ORM OwnerUsernameFilter
+```
+
+Puis personnaliser le fichier généré :
+```php
+class OwnerUsernameFilter implements FilterInterface
+{
+    use BackwardCompatibleFilterDescriptionTrait;
+
+    public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    {
+        $parameter = $context['parameter'];
+        $value = $parameter->getValue();
+        $value = is_array($value) ? $value[0] : $value;
+
+        $alias = $queryBuilder->getRootAliases()[0];
+
+        $queryBuilder
+            ->join(sprintf('%s.owner', $alias), 'owner')
+            ->andWhere('LOWER(owner.username) LIKE :username')
+            ->setParameter('username', '%' . strtolower($value) . '%');
+    }
+}
+```
+
+Et ensuite, on peut s'en servir comme n'importe quel filtre :
+
+```php
+#[QueryParameter('owner.username', filter: new OwnerUsernameFilter())]
+class DragonTreasure
+{
+}
+```
+La recherche sera `/treasures?owner.username=Dragon`
+
+> 💡 **Conseil**
+>
+> Il vaut mieux appliquer `LOWER` et `strtolower` pour rendre la recherche case insensitive.
+
+### Filtres sur plusieurs paramètres
+
+Si l'on souhaite créer 2 paramètres de fourchette de dates sans avoir à utiliser les filtres par défaut qui ne sont pas très "user friendly", on pourrait faire ceci :
+
+```php
+#[QueryParameter('plunderDateStart', description: 'Date de départ', constraints: [new Assert\Date()])]
+#[QueryParameter('plunderDateEnd', description: 'Date de fin', constraints: [new Assert\Date()])]
+class DragonTreasure
+{
+}
+```
+
+A noter que **les 2 paramètres ne correspondent à aucune propriété** de la classe !
+
+Et du coup, on souhaite créer un filtre qui pourra récupérer ces 2 paramètres, mais qui ne correspondra à aucun champs non plus...
+Pour ce faire, il faut appliquer le filtre directement à la ressource dans `#[ApiResource]` comme ceci :
+
+```php
+#[ApiResource(
+    shortName: 'Treasure',
+    description: 'A rare and valuable treasure.',
+    filters: [PlunderRangeFilter::class],
+)]
+#[QueryParameter('plunderDateStart', description: 'Date de départ', constraints: [new Assert\Date()])]
+#[QueryParameter('plunderDateEnd', description: 'Date de fin', constraints: [new Assert\Date()])]
+class DragonTreasure
+{
+}
+```
+
+> ℹ️ **Information**
+>
+> On notera que cette fois **il ne faut pas instancier le filtre** ! 😅
+
+Ensuite on peut filtrer sur les dates avec `/treasures?plunderDateStart=2025-01-01&plunderDateEnd=2022-01-31`
