@@ -7,6 +7,7 @@
 - - [Propriétés virtuelles](#Propriétés-virtuelles)
 - - [Groupes de serialization](#Groupes-de-serialization)
 - - [Pagination](#Pagination)
+- - [Operations](#Operations)
 - [Les filtres](#Les-filtres)
 - - [Search Filter](#Search-Filter)
 - - [Nouveaux filtres spéciaux](#Nouveaux-filtres-spéciaux)
@@ -14,6 +15,7 @@
 - - [Filtre personnalisé](#Filtre-personnalisé)
 - - [Filtres sur plusieurs paramètres](#Filtres-sur-plusieurs-paramètres)
 - [Les formats de réponse](#Les-formats-de-réponse)
+- [Gérer les relations](#Gérer-les-relations)
 
 
 ## Lexique
@@ -116,6 +118,34 @@ L'attribut `#[ApiResource]` permet de configurer la pagination pour chaque resso
 #[ApiResource(
     paginationItemsPerPage: 10,
     paginationMaximumItemsPerPage: 100
+)]
+```
+
+### Operations
+Dès qu'on ajoute l'attribut `#[ApiResource]` à la classe, on verra apparaitre les 6 opérations de base dans la documentation :
+- `GetCollection` : Récupère toutes les ressources paginées
+- `Get` : Récupère une ressource par ID
+- `Post` : Crée une nouvelle ressource
+- `Put` : **Remplace** une ressource
+- `Patch` : **Modifie** partiellement une ressource
+- `Delete` : Supprime une ressource
+
+> ℹ️ **Information**
+>
+> **Put supprime tous les champs actuels** pour ne prendre que le body envoyé ! 
+
+
+Si on souhaite désactiver une operation (par exemple ne conserver que `patch` mais pas `put`) on peut préciser les opérations par ressource :
+```php
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        // new Put(), // L'operation PUT disparaitra de la doc
+        new Patch(),
+        new Delete(),
+    ]
 )]
 ```
 
@@ -365,3 +395,53 @@ On aura du CSV !
 |-----------------------------|-------------------------------------------|--------|------------|---------------|----------------|
 | collection of ancient tomes | Praesentium quis ducimus omnis facilis... | 873409 | 7          | /api/users/11 | 3 months ago   |
 | set of golden utensils      | Magnam animi in libero ut est enim eos... | 47175  | 1          | /api/users/5  | 6 months ago   |
+
+Si on souhaite activer le format `csv` (par exemple) pour toutes les ressources, on peut l'ajouter dans la config yaml :
+
+```yaml
+# config/packages/api_platform.yaml
+api_platform:
+    title: Ma super API
+    version: 1.1.0
+    formats:
+        jsonld: [ 'application/ld+json' ]
+        csv: [ 'text/csv' ]
+```
+
+## Gérer les relations
+
+On l'a vu plus haut, un `DragonTreasure` possède une propriété `owner` qui fait reference à une entité `User`.
+Par défaut, lorsqu'on récupère un trésor, on verra l'owner sous forme d'un IRI :
+
+```json
+{
+  "@id": "/api/treasures/3",
+  "@type": "Treasure",
+  "name": "collection of ancient tomes",
+  "shortDescription": "Praesentium quis ducimus omnis facili...",
+  "value": 873409,
+  "coolFactor": 7,
+  "owner": "/api/users/11",
+  "plunderedAtAgo": "3 months ago"
+}
+```
+
+Mais si on veut imbriquer des champs du `User` dans la réponse, il suffit d'ajouter les divers groupes de sérialization (par exemple `treasure:read`) sur les propriétés du `User`.
+
+On pourrait obtenir quelque chose comme ça en ajoutant le groupe `treasure:read` au `username` :
+```json
+{
+    "@id": "/api/treasures/3",
+    "@type": "Treasure",
+    "name": "collection of ancient tomes",
+    "shortDescription": "Praesentium quis ducimus omnis facili...",
+    "value": 873409,
+    "coolFactor": 7,
+    "owner": {
+        "@id": "/api/users/11",
+        "@type": "User",
+        "username": "FlamingInferno236"
+    },
+    "plunderedAtAgo": "3 months ago"
+}
+```
