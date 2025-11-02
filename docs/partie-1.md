@@ -16,6 +16,7 @@
 - - [Filtres sur plusieurs paramètres](#Filtres-sur-plusieurs-paramètres)
 - [Les formats de réponse](#Les-formats-de-réponse)
 - [Gérer les relations](#Gérer-les-relations)
+- [Sous-ressources](#Sous-ressources)
 
 
 ## Lexique
@@ -445,3 +446,36 @@ On pourrait obtenir quelque chose comme ça en ajoutant le groupe `treasure:read
     "plunderedAtAgo": "3 months ago"
 }
 ```
+
+## Sous-ressources
+
+Il est possible d'utiliser plusieurs attributs `#[ApiResource]` sur la même classe en spécifiant des routes différentes, ça peut être pratique pour des usages communs.
+
+Par exemple pour récupérer les `dragonTreasures` d'un `User`, on peut créer une route `/users/{user_id}/treasures`.
+
+```php
+#[ApiResource(...)]
+#[ApiResource(
+    uriTemplate: '/users/{user_id}/treasures.{_format}',
+    shortName: 'Treasure',
+    operations: [new GetCollection()],
+    uriVariables: [
+        'user_id' => new Link(
+            fromProperty: 'dragonTreasures',
+            fromClass: User::class,
+        ),
+    ],
+    normalizationContext: ['groups' => ['treasure:read']],
+)]
+class DragonTreasure
+{
+}
+```
+
+> ℹ️ **Information**
+>
+> La partie `.{_format}` peut être omise, ça permet de forcer le format sans header
+
+> 💡 **Conseil**
+>
+> Il faut créer la route dans la classe de la ressource attendue, là on attend des trésors donc on crée la route dans `DragonTreasure`.
